@@ -373,7 +373,9 @@ Add this line to reboot every Sunday at 4:00 AM:
 ```
 0 4 * * 0 /sbin/reboot
 ```
-┌───────────── Minute (0 - 59)
+
+```cron
+┌───────────── Minute (0 - 59) 
 │ ┌─────────── Hour (0 - 23)
 │ │ ┌───────── Day of the Month (1 - 31)
 │ │ │ ┌─────── Month (1 - 12)
@@ -381,6 +383,7 @@ Add this line to reboot every Sunday at 4:00 AM:
 │ │ │ │ │
 │ │ │ │ │
 0 4 * * 0 /sbin/reboot
+```
 
 > ✅ Make sure this time slot fits your **maintenance window**.
 

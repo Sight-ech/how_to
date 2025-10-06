@@ -1,4 +1,4 @@
-# How to Secure Your VPS
+# How to Secure Your VPS - Rocky
 
 When you deploy a new VPS (Virtual Private Server), it’s often exposed to the internet with minimal protection. Without proper configuration, your server can quickly become a target for automated attacks, unauthorized access, or service disruptions.
 
@@ -9,7 +9,7 @@ Securing a VPS is a critical step after deployment. While there are baseline bes
 In this tutorial, we’ll focus specifically on securing a **Rocky Linux** server. You’ll learn how to apply common security principles using tools and configurations tailored to this Red Hat-based distribution.
 
 ## Table of Contents
-- [How to Secure Your VPS](#how-to-secure-your-vps)
+- [How to Secure Your VPS - Rocky](#how-to-secure-your-vps---rocky)
 - [Introduction](#introduction)
   - [Table of Contents](#table-of-contents)
   - [1. Secure SSH Connection](#1-secure-ssh-connection)

@@ -1,6 +1,6 @@
 # How to Set Up a Lab with Vagrant (on Ubuntu with KVM/libvirt)
 
-# 1. Introduction
+## Introduction
 Vagrant is a tool that simplifies the creation and management of reproducible virtual environments.
 In this tutorial, you’ll learn how to build a local lab on Ubuntu using Vagrant with KVM/libvirt, the native Linux virtualization stack.
 
@@ -10,43 +10,43 @@ The goal is to prepare a safe and isolated space to test system configurations, 
 
 ## Table of Contents
 - [How to Set Up a Lab with Vagrant (on Ubuntu with KVM/libvirt)](#how-to-set-up-a-lab-with-vagrant-on-ubuntu-with-kvmlibvirt)
-- [1. Introduction](#1-introduction)
+  - [Introduction](#introduction)
   - [Table of Contents](#table-of-contents)
-- [2. Install and Configure Vagrant (on Ubuntu with KVM/libvirt)](#2-install-and-configure-vagrant-on-ubuntu-with-kvmlibvirt)
-  - [2.1 Check virtualization support](#21-check-virtualization-support)
-  - [2.2 Install KVM and libvirt](#22-install-kvm-and-libvirt)
-  - [2.3 Install Vagrant](#23-install-vagrant)
-  - [2.4 Install the libvirt provider plugin](#24-install-the-libvirt-provider-plugin)
-  - [2.5 Verify the setup](#25-verify-the-setup)
-  - [🧭 **Monitoring and Inspecting VMs**](#-monitoring-and-inspecting-vms)
-    - [Using Vagrant](#using-vagrant)
-    - [Using libvirt (CLI)](#using-libvirt-cli)
-    - [Using virt-manager (GUI)](#using-virt-manager-gui)
-- [3. Create Your First Vagrant Lab](#3-create-your-first-vagrant-lab)
-  - [3.1 Initialize a project](#31-initialize-a-project)
-  - [3.2 Configure the Vagrantfile](#32-configure-the-vagrantfile)
-  - [3.3 Start, connect, and manage the VM](#33-start-connect-and-manage-the-vm)
-  - [3.4 Clean up and destroy environments](#34-clean-up-and-destroy-environments)
-- [4. Best Practices for Lab Organization](#4-best-practices-for-lab-organization)
-  - [4.1 Initialize a New Vagrant Project](#41-initialize-a-new-vagrant-project)
-  - [4.2 Configure the `Vagrantfile`](#42-configure-the-vagrantfile)
-  - [4.3 Start, Connect, and Manage the VM Lifecycle](#43-start-connect-and-manage-the-vm-lifecycle)
-  - [4.4 Clean Up and Destroy Environments Safely](#44-clean-up-and-destroy-environments-safely)
-- [5. Troubleshooting and Tips](#5-troubleshooting-and-tips)
-  - [5.1 Common Issues and Fixes](#51-common-issues-and-fixes)
-  - [5.2 Performance Optimization](#52-performance-optimization)
-  - [5.3 Networking Gotchas (Bridged vs. Host-only)](#53-networking-gotchas-bridged-vs-host-only)
-- [6. Conclusion](#6-conclusion)
+  - [1. Install and Configure Vagrant (on Ubuntu with KVM/libvirt)](#1-install-and-configure-vagrant-on-ubuntu-with-kvmlibvirt)
+    - [1.1 Check virtualization support](#11-check-virtualization-support)
+    - [1.2 Install KVM and libvirt](#12-install-kvm-and-libvirt)
+    - [1.3 Install Vagrant](#13-install-vagrant)
+    - [1.4 Install the libvirt provider plugin](#14-install-the-libvirt-provider-plugin)
+    - [1.5 Verify the setup](#15-verify-the-setup)
+    - [🧭 **Monitoring and Inspecting VMs**](#-monitoring-and-inspecting-vms)
+      - [Using Vagrant](#using-vagrant)
+      - [Using libvirt (CLI)](#using-libvirt-cli)
+      - [Using virt-manager (GUI)](#using-virt-manager-gui)
+  - [2. Create Your First Vagrant Lab](#2-create-your-first-vagrant-lab)
+    - [2.1 Initialize a project](#21-initialize-a-project)
+    - [2.2 Configure the Vagrantfile](#22-configure-the-vagrantfile)
+    - [2.3 Start, connect, and manage the VM](#23-start-connect-and-manage-the-vm)
+    - [2.4 Clean up and destroy environments](#24-clean-up-and-destroy-environments)
+  - [3. Best Practices for Lab Organization](#3-best-practices-for-lab-organization)
+    - [3.1 Initialize a New Vagrant Project](#31-initialize-a-new-vagrant-project)
+    - [3.2 Configure the `Vagrantfile`](#32-configure-the-vagrantfile)
+    - [3.3 Start, Connect, and Manage the VM Lifecycle](#33-start-connect-and-manage-the-vm-lifecycle)
+    - [3.4 Clean Up and Destroy Environments Safely](#34-clean-up-and-destroy-environments-safely)
+  - [4. Troubleshooting and Tips](#4-troubleshooting-and-tips)
+    - [4.1 Common Issues and Fixes](#41-common-issues-and-fixes)
+    - [4.2 Performance Optimization](#42-performance-optimization)
+    - [4.3 Networking Gotchas (Bridged vs. Host-only)](#43-networking-gotchas-bridged-vs-host-only)
+  - [5. Conclusion](#5-conclusion)
 
 
-# 2. Install and Configure Vagrant (on Ubuntu with KVM/libvirt)
+## 1. Install and Configure Vagrant (on Ubuntu with KVM/libvirt)
 
 Vagrant is a powerful automation tool that lets you define, launch, and destroy reproducible virtual environments with a single command.
 On Linux, it works best with **KVM** (the hypervisor) and **libvirt** (the virtualization API layer).
 
 ---
 
-## 2.1 Check virtualization support
+### 1.1 Check virtualization support
 
 Make sure your CPU supports virtualization:
 
@@ -59,7 +59,7 @@ Enable it in BIOS/UEFI if necessary.
 
 ---
 
-## 2.2 Install KVM and libvirt
+### 1.2 Install KVM and libvirt
 
 Install the virtualization stack:
 
@@ -91,7 +91,7 @@ If you see an empty table and no error, it’s working.
 
 ---
 
-## 2.3 Install Vagrant
+### 1.3 Install Vagrant
 
 Install Vagrant from HashiCorp’s official repository (Ubuntu’s default package is often outdated):
 
@@ -113,7 +113,7 @@ vagrant --version
 
 ---
 
-## 2.4 Install the libvirt provider plugin
+### 1.4 Install the libvirt provider plugin
 
 Before installing the plugin, install the required development dependencies:
 
@@ -146,7 +146,7 @@ vagrant plugin list
 
 ---
 
-## 2.5 Verify the setup
+### 1.5 Verify the setup
 
 Test that Vagrant and libvirt work together:
 
@@ -173,9 +173,9 @@ vagrant destroy -f
 
 ---
 
-## 🧭 **Monitoring and Inspecting VMs**
+### 🧭 **Monitoring and Inspecting VMs**
 
-### Using Vagrant
+#### Using Vagrant
 
 List all known VMs:
 
@@ -183,7 +183,7 @@ List all known VMs:
 vagrant global-status
 ```
 
-### Using libvirt (CLI)
+#### Using libvirt (CLI)
 
 Vagrant uses user sessions by default. To list your Vagrant VMs:
 
@@ -191,7 +191,7 @@ Vagrant uses user sessions by default. To list your Vagrant VMs:
 virsh --connect qemu:///system list --all
 ```
 
-### Using virt-manager (GUI)
+#### Using virt-manager (GUI)
 
 Run:
 
@@ -210,13 +210,13 @@ and browse your VMs visually.
 
 ---
 
-# 3. Create Your First Vagrant Lab
+## 2. Create Your First Vagrant Lab
 
 Now that your setup works, let’s create a small, reproducible environment.
 
 ---
 
-## 3.1 Initialize a project
+### 2.1 Initialize a project
 
 Create a new directory and initialize Vagrant:
 
@@ -229,7 +229,7 @@ This creates a `Vagrantfile` defining how your virtual machine behaves.
 
 ---
 
-## 3.2 Configure the Vagrantfile
+### 2.2 Configure the Vagrantfile
 
 Edit the `Vagrantfile` with your preferred editor:
 
@@ -280,7 +280,7 @@ end
 
 ---
 
-## 3.3 Start, connect, and manage the VM
+### 2.3 Start, connect, and manage the VM
 
 Launch your lab:
 
@@ -311,7 +311,7 @@ vagrant reload --provision
 
 ---
 
-## 3.4 Clean up and destroy environments
+### 2.4 Clean up and destroy environments
 
 When done testing:
 
@@ -338,14 +338,14 @@ You’ve successfully:
 
 ---
 
-# 4. Best Practices for Lab Organization
+## 3. Best Practices for Lab Organization
 
 Keeping your Vagrant labs organized is essential for reproducibility, clarity, and team collaboration.
 Here are a few good practices to adopt early.
 
 ---
 
-## 4.1 Initialize a New Vagrant Project
+### 3.1 Initialize a New Vagrant Project
 
 Use a dedicated directory for each lab.
 For example, if you want to test a secured web app:
@@ -361,7 +361,7 @@ You can even store reusable provisioning scripts (for example, `scripts/setup.sh
 
 ---
 
-## 4.2 Configure the `Vagrantfile`
+### 3.2 Configure the `Vagrantfile`
 
 A clean `Vagrantfile` should include:
 
@@ -393,7 +393,7 @@ end
 
 ---
 
-## 4.3 Start, Connect, and Manage the VM Lifecycle
+### 3.3 Start, Connect, and Manage the VM Lifecycle
 
 Common commands to control your lab:
 
@@ -410,7 +410,7 @@ These commands make it easy to iterate quickly between configuration and testing
 
 ---
 
-## 4.4 Clean Up and Destroy Environments Safely
+### 3.4 Clean Up and Destroy Environments Safely
 
 When you finish testing:
 
@@ -427,14 +427,14 @@ This keeps your disk usage under control and prevents stale entries from appeari
 
 ---
 
-# 5. Troubleshooting and Tips
+## 4. Troubleshooting and Tips
 
 Even with a simple setup, some issues can appear.
 Here are the most common ones and how to fix them.
 
 ---
 
-## 5.1 Common Issues and Fixes
+### 4.1 Common Issues and Fixes
 
 | Problem                                       | Cause                         | Solution                                                            |
 | --------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
@@ -447,7 +447,7 @@ Here are the most common ones and how to fix them.
 
 ---
 
-## 5.2 Performance Optimization
+### 4.2 Performance Optimization
 
 * **Use lightweight boxes:** prefer `generic/ubuntu` or `alpine` when possible.
 * **Limit resources:** in your `Vagrantfile`, assign only what you need:
@@ -461,7 +461,7 @@ Here are the most common ones and how to fix them.
 
 ---
 
-## 5.3 Networking Gotchas (Bridged vs. Host-only)
+### 4.3 Networking Gotchas (Bridged vs. Host-only)
 
 Vagrant offers several networking modes:
 
@@ -479,7 +479,7 @@ config.vm.network "private_network", ip: "192.168.56.10"
 
 ---
 
-# 6. Conclusion
+## 5. Conclusion
 
 You now have a reproducible, self-contained lab environment powered by **Vagrant + KVM/libvirt**.
 You learned how to:

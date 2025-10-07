@@ -2,7 +2,7 @@
 
 When you deploy a new VPS (Virtual Private Server), it’s often exposed to the internet with minimal protection. Without proper configuration, your server can quickly become a target for automated attacks, unauthorized access, or service disruptions.
 
-# Introduction
+## Introduction
 
 Securing a VPS is a critical step after deployment. While there are baseline best practices — such as configuring a firewall, disabling unused services, and securing SSH access — the exact commands and configuration files can vary depending on the operating system.
 
@@ -10,25 +10,31 @@ In this tutorial, we’ll focus specifically on securing a **Rocky Linux** serve
 
 ## Table of Contents
 - [How to Secure Your VPS - Rocky](#how-to-secure-your-vps---rocky)
-- [Introduction](#introduction)
+  - [Introduction](#introduction)
   - [Table of Contents](#table-of-contents)
   - [1. Secure SSH Connection](#1-secure-ssh-connection)
     - [1.1 Change the SSH Port](#11-change-the-ssh-port)
     - [1.2 Generate a Secure SSH Key Pair](#12-generate-a-secure-ssh-key-pair)
     - [1.3 Upload the Public Key to the Server](#13-upload-the-public-key-to-the-server)
     - [1.4 Disable Password Authentication](#14-disable-password-authentication)
+    - [1.5 🧍 Create a Non-Root User and Disable Root Login](#15--create-a-non-root-user-and-disable-root-login)
   - [2. Set Firewall Rules](#2-set-firewall-rules)
     - [2.1 Basic Rules for a Reverse Proxy](#21-basic-rules-for-a-reverse-proxy)
     - [2.2 Allowing UDP (Example)](#22-allowing-udp-example)
-    - [2.3 Check Open Ports](#23-check-open-ports)
+    - [2.3 Check Open Ports from the Firewall](#23-check-open-ports-from-the-firewall)
+    - [2.4 🧩 Network-Level Defense](#24--network-level-defense)
+    - [2.5 🔒 Restrict SSH Access to Specific IPs (Optional)](#25--restrict-ssh-access-to-specific-ips-optional)
+    - [2.6 🧱 Fail2Ban (Optional – SSH Only)](#26--fail2ban-optional--ssh-only)
   - [3. Disable Unused Services](#3-disable-unused-services)
     - [3.1 List Running Services](#31-list-running-services)
     - [3.2 Disable a Service](#32-disable-a-service)
     - [3.3 Mask a Service (Optional)](#33-mask-a-service-optional)
     - [3.4 Check Listening Ports (Optional Audit)](#34-check-listening-ports-optional-audit)
+    - [3.5 🛠️ Basic System Hardening](#35-️-basic-system-hardening)
   - [4. Set Security Updates](#4-set-security-updates)
     - [4.1 Check for Available Security Updates](#41-check-for-available-security-updates)
     - [4.2 Install Security Updates Manually](#42-install-security-updates-manually)
+    - [4.3 ⏰ Enable Chrony for Time Synchronization](#43--enable-chrony-for-time-synchronization)
   - [5. Configure Automatic Patching](#5-configure-automatic-patching)
     - [⚠️ Important Note for Production Servers](#️-important-note-for-production-servers)
     - [5.1 Install dnf-automatic](#51-install-dnf-automatic)
@@ -57,10 +63,14 @@ sudo vi /etc/ssh/sshd_config
 ```
 Port 50022
 ```
-**Security tools**
-- **SELinux**: Protects the system from unauthorized actions inside the server. It controls access within the system. For example, it can restrict a web server from accessing files outside its designated directory, even if the file permissions allow it.
+---
 
-- **firewall-cmd**: Protects the system from unauthorized access from outside the server. It controls external access to your system by defining which ports, protocols, and IPs are allowed or blocked.
+> **Security tools**  :memo:
+> - **SELinux**: Protects the system from unauthorized actions inside the server. It controls access within the system. For example, it can restrict a web server from accessing files outside its designated directory, even if the file permissions allow it.
+>
+> - **firewall-cmd**: Protects the system from unauthorized access from outside the server. It controls external access to your system by defining which ports, protocols, and IPs are allowed or blocked.
+
+---
 
 **3. Update SELinux** (if enabled) to allow the new port:
 
@@ -105,7 +115,8 @@ sudo firewall-cmd --permanent --add-port=80/tcp        # HTTP
 sudo firewall-cmd --permanent --add-port=443/tcp       # HTTPS
 ```
 
-4.4. **Remove Unnecessary Services**:
+4.4. **Remove Default Firewall Services**
+These commands remove default firewall service rules (like SSH on port 22) so you can allow only your custom SSH port and minimize exposure to unnecessary services.
 ```bash
 sudo firewall-cmd --list-services # Check current services
 sudo firewall-cmd --permanent --remove-service=ssh
@@ -176,7 +187,6 @@ sudo vi /etc/ssh/sshd_config
 
 ```
 PasswordAuthentication no
-PermitRootLogin no
 ```
 
 3. Restart SSH:
@@ -185,7 +195,33 @@ PermitRootLogin no
 sudo systemctl restart sshd
 ```
 
-You’ve now secured SSH access by using keys only, moved it off the default port, and disabled root/password login.
+### 1.5 🧍 Create a Non-Root User and Disable Root Login
+
+Use (or create) a non-root user with sudo privileges, and disable SSH root access.
+This limits the damage if an attacker compromises a single account.
+
+```bash
+adduser adminuser
+usermod -aG wheel adminuser
+sudo vi /etc/ssh/sshd_config
+```
+
+Change or ensure:
+
+```
+PermitRootLogin no
+```
+
+Restart SSH:
+
+```bash
+sudo systemctl restart sshd
+```
+
+✅ From now, connect with your non-root user and use `sudo` when needed.
+
+
+You’ve now secured SSH access by using keys only, moved it off the default port, disabled root/password login, and limited exposure via the firewall.
 
 ---
 
@@ -203,7 +239,7 @@ sudo firewall-cmd --permanent --add-service=https
 sudo firewall-cmd --reload
 ```
 
-You can also allow by port if you prefer:
+**OR:** You can also allow by port if you prefer:
 
 ```bash
 sudo firewall-cmd --permanent --add-port=80/tcp
@@ -220,12 +256,62 @@ sudo firewall-cmd --permanent --add-port=1194/udp
 sudo firewall-cmd --reload
 ```
 
-### 2.3 Check Open Ports
+### 2.3 Check Open Ports from the Firewall
 
 To verify which ports are allowed:
 
 ```bash
 sudo firewall-cmd --list-all
+```
+
+### 2.4 🧩 Network-Level Defense
+
+Add connection rate limits to slow down automated attacks.
+
+```bash
+sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" port port="22" protocol="tcp" limit value="3/m" accept'
+sudo firewall-cmd --reload
+sudo firewall-cmd --set-log-denied=all
+```
+
+✅ Limits SSH to 3 new connections per minute per IP, dropping the rest silently.
+
+### 2.5 🔒 Restrict SSH Access to Specific IPs (Optional)
+
+Limit SSH access to trusted IPs for stronger control.
+
+```bash
+sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="123.45.67.89" port port="22" protocol="tcp" accept'
+sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" port port="22" protocol="tcp" drop'
+sudo firewall-cmd --reload
+```
+
+✅ Only your trusted IP can now reach SSH. Others are silently dropped.
+
+### 2.6 🧱 Fail2Ban (Optional – SSH Only)
+
+Even if SSH passwords are disabled, bots still try connecting. Fail2Ban blocks IPs after repeated failed attempts.
+
+```bash
+sudo dnf install fail2ban
+sudo systemctl enable --now fail2ban
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+```
+
+In `/etc/fail2ban/jail.local`:
+
+```
+[sshd]
+enabled = true
+maxretry = 5
+bantime = 10m
+findtime = 10m
+```
+
+Restart:
+
+```bash
+sudo systemctl restart fail2ban
 ```
 ---
 
@@ -279,7 +365,22 @@ Only expected services (like your reverse proxy or SSH) should appear.
 
 Disabling unused services is a simple but often overlooked security step. It not only reduces risk, but also improves performance and clarity when managing your server.
 
-Excellent conclusion ! Voici les sections **4. Set Security Updates** et **5. Configure Automatic Patching** en Markdown, avec des bonnes pratiques, des commandes claires, et une note importante pour les environnements de production.
+### 3.5 🛠️ Basic System Hardening
+
+A few minimal steps help improve reliability and traceability.
+
+```bash
+sudo dnf install logrotate audit
+sudo systemctl enable --now logrotate.timer auditd
+sudo chmod 700 /root
+sudo chmod 600 /etc/ssh/sshd_config
+```
+
+These commands:
+
+* Rotate logs to prevent disk flooding
+* Track key changes via `auditd`
+* Protect sensitive directories
 
 ---
 
@@ -303,7 +404,19 @@ To apply just the security patches:
 sudo dnf update --security
 ```
 
-You can automate this with a cron job or systemd timer if you prefer full control (see below).
+You can automate this with a cron job or systemd timer if you prefer full control [see next section](#5-configure-automatic-patching).
+
+### 4.3 ⏰ Enable Chrony for Time Synchronization
+
+Keep system time accurate for logging and TLS validation.
+
+```bash
+sudo dnf install chrony
+sudo systemctl enable --now chronyd
+chronyc tracking
+```
+
+✅ Ensures your system clock stays synchronized automatically.
 
 ---
 
@@ -375,7 +488,7 @@ Add this line to reboot every Sunday at 4:00 AM:
 ```
 
 ```cron
-┌───────────── Minute (0 - 59) 
+┌───────────── Minute (0 - 59)
 │ ┌─────────── Hour (0 - 23)
 │ │ ┌───────── Day of the Month (1 - 31)
 │ │ │ ┌─────── Month (1 - 12)

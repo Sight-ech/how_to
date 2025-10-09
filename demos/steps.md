@@ -48,13 +48,33 @@ vagrant ssh vm1 -c "nmap -Pn -p 22,80,443 $VM2_IP"
 ## Secure VM2
 ```bash
 ssh-keygen -t ed25519 -C "your_email@example.com" -f ./keys/id_rsa
-ssh-copy-id -p 50022 -i ./keys/id_rsa.pub vagrant@$VM2_IP
+ssh-copy-id -p 22 -i ./keys/id_rsa.pub vagrant@$VM2_IP
+
+vagrant ssh vm2 -c "sudo systemctl restart sshd"
+
+ssh -i ./keys/id_rsa -p 22 vagrant@$VM2_IP
 
 vagrant provision vm2 --provision-with secure_vm --provider=libvirt
 
 
+```
 
 
+## Set up the web app
+```bash
+ssh -i ./keys/id_rsa -p 22 vagrant@$VM2_IP
+cd /vagrant/
+```
+
+## Test the web app
+```bash
+curl http://localhost:8080/health
+curl -s -X POST http://localhost:8080/login   -H "Content-Type: application/json"   -d '{"username":"demo","password":"changeme"}'   -c cookies.txt
+curl -s http://localhost:8080/add -b cookies.txt
+curl -s -X POST http://localhost:8080/add -H "Content-Type: application/json"   -d '{"value":5}' -b cookies.txt
+curl -s http://localhost:8080/add -b cookies.txt
+curl -s -X POST -u demo:changeme http://localhost:8080/add   -H "Content-Type: application/json" -d '{"value":3}'
+curl -s -X POST http://localhost:8080/add -H "Content-Type: application/json"   -d '{"value":5}' -b cookies.txt
 ```
 
 

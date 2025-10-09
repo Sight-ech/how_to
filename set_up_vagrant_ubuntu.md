@@ -72,6 +72,7 @@ Enable and start the libvirt service:
 
 ```bash
 sudo systemctl enable --now libvirtd
+sudo systemctl status libvirtd
 ```
 
 Add your user to the right groups to avoid `sudo`:
